@@ -1,11 +1,13 @@
 final int W = 2000;
-final int S = 10;
+final int SPEED = 4;
+final int SCALE = 200;
 
 boolean keyW, keyA, keyS, keyD;
 
 float eyeX, eyeY, eyeZ;
 float focusX, focusY, focusZ;
 float tiltX, tiltY, tiltZ;
+float angX, angY;
 
 void setup() {
   size(800, 800, P3D);
@@ -29,29 +31,55 @@ void setup() {
 void draw() {
   background(0);
   
-  controlCamera();
-  drawFloor();
-}
-
-void controlCamera() {
   camera(eyeX, eyeY, eyeZ, focusX, focusY, focusZ, tiltX, tiltY, tiltZ);
   
-  if (keyW) eyeZ += S;
-  if (keyA) eyeX += S;
-  if (keyS) eyeZ -= S;
-  if (keyD) eyeX -= S;
+  drawFloor();
+  drawFocalPoint();
+  controlCamera();
+}
+
+void controlCamera() {  
+  if (keyW) {
+    eyeX += cos(angX) * SCALE * SPEED / frameRate;
+    eyeZ += sin(angX) * SCALE * SPEED / frameRate;
+  }
+  if (keyA) {
+    eyeX -= cos(angX + PI/2) * SCALE * SPEED / frameRate;
+    eyeZ -= sin(angX + PI/2) * SCALE * SPEED / frameRate;
+  }
+  if (keyS) {
+    eyeX -= cos(angX) * SCALE * SPEED / frameRate;
+    eyeZ -= sin(angX) * SCALE * SPEED / frameRate;
+  }
+  if (keyD) {
+    eyeX -= cos(angX - PI/2) * SCALE * SPEED / frameRate;
+    eyeZ -= sin(angX - PI/2) * SCALE * SPEED / frameRate;
+  }
   
-  focusX = eyeX;
-  focusY = eyeY;
-  focusZ = eyeZ + 10;
+  angX += (mouseX - pmouseX) * 0.004;
+  angY += (mouseY - pmouseY) * 0.004;
+  
+  focusX = eyeX + cos(angX) * 5;
+  focusY = eyeY + tan(angY) * 5;
+  focusZ = eyeZ + sin(angX) * 5;
 }
 
 void drawFloor() {
   stroke(255);
-  for (int x = -W; x < W; x += 100) {
+  for (int x = -W; x < W; x += SCALE) {
     line(x, height, -W, x, height, W);
     line(-W, height, x, W, height, x);
   }
+}
+
+void drawFocalPoint() {
+  pushMatrix();
+  translate(focusX, focusY, focusZ);
+  
+  fill(255);
+  sphere(3);
+  
+  popMatrix();
 }
 
 void keyPressed() {
